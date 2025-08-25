@@ -2,7 +2,10 @@ package sit.tuvarna.bg.authservice.user.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sit.tuvarna.bg.authservice.staffDetail.model.StaffDetail;
+import sit.tuvarna.bg.authservice.staffSchedule.model.StaffSchedule;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -36,8 +39,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Enumerated(EnumType.STRING)
-    private Provider provider;
+    @OneToMany(mappedBy = "user")
+    private List<StaffSchedule> staffSchedules;
 
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL,fetch =  FetchType.EAGER)
+    private StaffDetail staffDetail;
 }
 

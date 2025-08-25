@@ -1,5 +1,5 @@
 package sit.tuvarna.bg.authservice.user.model;
 
 public enum Role {
-    USER,BARTENDER,WAITER,WAITRESS,HOSTESS,ADMIN
+    USER,BARTENDER,WAITER,HOSTESS,ADMIN,CHEF
 }

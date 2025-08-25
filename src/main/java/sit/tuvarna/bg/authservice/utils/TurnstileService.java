@@ -20,7 +20,6 @@ public class TurnstileService {
     private static final String url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
     public boolean verify(String token) {
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         String body = "secret=%s&response=%s".formatted(secret, token);
