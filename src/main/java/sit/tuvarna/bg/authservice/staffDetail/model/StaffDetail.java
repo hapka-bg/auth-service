@@ -1,7 +1,10 @@
 package sit.tuvarna.bg.authservice.staffDetail.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import sit.tuvarna.bg.authservice.user.model.User;
 
 import java.math.BigDecimal;
@@ -11,6 +14,9 @@ import java.util.UUID;
 @Entity
 @Data
 @Table(name = "staff_details")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StaffDetail {
 
 

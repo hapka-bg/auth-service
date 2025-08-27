@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sit.tuvarna.bg.authservice.staffSchedule.service.StaffScheduleService;
 import sit.tuvarna.bg.authservice.user.service.AuthService;
+import sit.tuvarna.bg.authservice.web.dto.AddStaffRequest;
 import sit.tuvarna.bg.authservice.web.dto.AllUsersResponse;
 import sit.tuvarna.bg.authservice.web.dto.UserDetailsForOnlineOrders;
 
@@ -45,6 +46,12 @@ public class StaffController {
     public ResponseEntity<UserDetailsForOnlineOrders> getPhoneNumberAndAddress(@PathVariable UUID id) {
         UserDetailsForOnlineOrders phoneNumberAndAddress = authService.getPhoneNumberAndAddress(id);
         return ResponseEntity.ok(phoneNumberAndAddress);
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<?> addStaff(@RequestBody AddStaffRequest request){
+        authService.addStaff(request);
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sit.tuvarna.bg.authservice.blacklistedToken.model.BlacklistedToken;
 import sit.tuvarna.bg.authservice.blacklistedToken.repository.BlacklistedTokenRepository;
+import sit.tuvarna.bg.authservice.staffDetail.model.StaffDetail;
 import sit.tuvarna.bg.authservice.user.model.Role;
 import sit.tuvarna.bg.authservice.user.model.User;
 import sit.tuvarna.bg.authservice.user.repository.UserRepository;
@@ -16,6 +17,7 @@ import sit.tuvarna.bg.authservice.web.dto.*;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,7 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest r) {
-//        if (!turnstile.verify(r.turnstileToken())) throw new RuntimeException("CAPTCHA fail");
+        if (!turnstile.verify(r.turnstileToken())) throw new RuntimeException("CAPTCHA fail");
         if (repo.existsByEmail(r.email())) throw new RuntimeException("Email exists");
         User u = User.builder()
                 .email(r.email())
@@ -147,5 +149,30 @@ public class AuthService {
                 .phoneNumber(user.getPhoneNumber())
                 .build();
 
+    }
+
+    public void addStaff(AddStaffRequest addStaff) {
+        if(repo.existsByEmail(addStaff.getEmail())){
+            throw new RuntimeException("Email is already registered");
+        }
+        User build = User.builder()
+                .firstName(addStaff.getFirstName())
+                .lastName(addStaff.getLastName())
+                .email(addStaff.getEmail())
+                .phoneNumber(addStaff.getPhone())
+                .role(Role.valueOf(addStaff.getRole().toUpperCase()))
+                .build();
+
+        StaffDetail staffDetail = StaffDetail.builder()
+                .active(true)
+                .hiredDate(LocalDate.now())
+                .salary(addStaff.getSalary())
+                .notes("empty")
+                .build();
+
+
+        staffDetail.setUser(build);
+        build.setStaffDetail(staffDetail);
+        repo.save(build);
     }
 }
