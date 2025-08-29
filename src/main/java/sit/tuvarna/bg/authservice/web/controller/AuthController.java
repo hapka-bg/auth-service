@@ -7,11 +7,13 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sit.tuvarna.bg.authservice.user.service.AuthService;
-import sit.tuvarna.bg.authservice.web.dto.AuthResponse;
-import sit.tuvarna.bg.authservice.web.dto.LoginRequest;
-import sit.tuvarna.bg.authservice.web.dto.RegisterRequest;
+import sit.tuvarna.bg.authservice.web.dto.*;
+import sit.tuvarna.bg.authservice.web.dto.updatingUser.ChangePasswordRequest;
+import sit.tuvarna.bg.authservice.web.dto.updatingUser.UpdateResponse;
+import sit.tuvarna.bg.authservice.web.dto.updatingUser.UserDetailsDto;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -51,5 +53,29 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE,logout.toString())
                 .body(Map.of("message","Logged out successfully"));
+    }
+
+    @GetMapping("/extract-user-id")
+    public ResponseEntity<UUID> extractUserId(@RequestHeader("Authorization") String authHeader){
+        UUID uuid = auth.extractUserId(authHeader);
+        return ResponseEntity.ok(uuid);
+    }
+    @GetMapping("/user-details")
+    public ResponseEntity<UserProfileDetails>  userDetails(@RequestHeader("Authorization") String authHeader){
+        UserProfileDetails userDetails = auth.getUserDetails(authHeader);
+        return ResponseEntity.ok(userDetails);
+    }
+
+    @PutMapping("/user-details")
+    public ResponseEntity<UpdateResponse> updateUser(@RequestBody UserDetailsDto updatedDetails,
+                                                     @RequestHeader("Authorization") String authHeader){
+        UpdateResponse updateResponse = auth.updateUser(updatedDetails, authHeader);
+        return ResponseEntity.ok(updateResponse);
+    }
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request,@RequestHeader("Authorization") String authHeader){
+        auth.changePassword(request,authHeader);
+        return ResponseEntity.ok("Password updated successfully");
+
     }
 }

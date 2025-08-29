@@ -49,9 +49,10 @@ public class StaffController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addStaff(@RequestBody AddStaffRequest request){
+    public ResponseEntity<Void> addStaff(@RequestBody AddStaffRequest request){
         authService.addStaff(request);
         return ResponseEntity.ok().build();
     }
+
 
 }

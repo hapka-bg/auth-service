@@ -56,5 +56,15 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
+    public String extractEmailFromToken(String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getSubject();
+    }
 }
 

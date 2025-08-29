@@ -14,6 +14,9 @@ import sit.tuvarna.bg.authservice.user.repository.UserRepository;
 import sit.tuvarna.bg.authservice.utils.JwtUtil;
 import sit.tuvarna.bg.authservice.utils.TurnstileService;
 import sit.tuvarna.bg.authservice.web.dto.*;
+import sit.tuvarna.bg.authservice.web.dto.updatingUser.ChangePasswordRequest;
+import sit.tuvarna.bg.authservice.web.dto.updatingUser.UpdateResponse;
+import sit.tuvarna.bg.authservice.web.dto.updatingUser.UserDetailsDto;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -144,7 +147,7 @@ public class AuthService {
 
     public UserDetailsForOnlineOrders getPhoneNumberAndAddress(UUID id) {
         User user = repo.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-      return  UserDetailsForOnlineOrders.builder()
+        return UserDetailsForOnlineOrders.builder()
                 .address(user.getStreet())
                 .phoneNumber(user.getPhoneNumber())
                 .build();
@@ -152,7 +155,7 @@ public class AuthService {
     }
 
     public void addStaff(AddStaffRequest addStaff) {
-        if(repo.existsByEmail(addStaff.getEmail())){
+        if (repo.existsByEmail(addStaff.getEmail())) {
             throw new RuntimeException("Email is already registered");
         }
         User build = User.builder()
@@ -174,5 +177,67 @@ public class AuthService {
         staffDetail.setUser(build);
         build.setStaffDetail(staffDetail);
         repo.save(build);
+    }
+
+    public UUID extractUserId(String authHeader) {
+        String email = jwt.extractEmailFromToken(authHeader);
+        return repo.findByEmail(email)
+                .map(User::getId).
+                orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public UserProfileDetails getUserDetails(String authHeader) {
+        String email = jwt.extractEmailFromToken(authHeader);
+        User user = repo.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        return UserProfileDetails.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhoneNumber())
+                .address(user.getStreet())
+                .city(user.getCity())
+                .build();
+    }
+
+    public UpdateResponse updateUser(UserDetailsDto updatedDetails, String authHeader) {
+
+        String email = jwt.extractEmailFromToken(authHeader);
+        User user = repo.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        if (updatedDetails.getEmail() != null &&
+                !updatedDetails.getEmail().equals(user.getEmail())) {
+            user.setEmail(updatedDetails.getEmail());
+            repo.save(user);
+
+            // Generate a new token with the new email
+            String newToken = jwt.generateAccessToken(user);
+
+            return new UpdateResponse(newToken, user);
+        } else {
+            // Update other fields if needed
+            if (updatedDetails.getFirstName() != null)
+                user.setFirstName(updatedDetails.getFirstName());
+            if (updatedDetails.getLastName() != null) user.setLastName(updatedDetails.getLastName());
+            if (updatedDetails.getPhone() != null) user.setPhoneNumber(updatedDetails.getPhone());
+            if (updatedDetails.getAddress() != null) user.setStreet(updatedDetails.getAddress());
+            if (updatedDetails.getCity() != null) user.setCity(updatedDetails.getCity());
+            repo.save(user);
+
+            return new UpdateResponse(authHeader,user);
+        }
+
+    }
+
+    public void changePassword(ChangePasswordRequest request, String authHeader) {
+        if(request.getOldPassword().isBlank() ||  request.getNewPassword().isBlank() || request.getConfirmNewPassword().isBlank()) throw new    RuntimeException("Old password and new password are empty");
+        if(!request.getNewPassword().equals(request.getConfirmNewPassword())) throw new RuntimeException("New passwords do not match");
+
+        String email = jwt.extractEmailFromToken(authHeader);
+        User user = repo.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(!encoder.matches(request.getOldPassword(), user.getPassword())) throw new RuntimeException("Old passwords do not match");
+
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        repo.save(user);
+
     }
 }
